@@ -2,10 +2,27 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const AuthContext = createContext();
 
-export const DEMO_CREDENTIALS = {
+export const DEMO_ADMIN_CREDENTIALS = {
   email: 'admin@college.edu',
   password: 'admin123'
 };
+
+export const DEMO_STUDENTS = [
+  {
+    name: 'Aarav Patel',
+    studentId: 'CS-2024-042',
+    department: 'Computer Science & Engineering',
+    email: 'aarav.cs24@college.edu',
+    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80'
+  },
+  {
+    name: 'Kavya Verma',
+    studentId: 'EC-2024-089',
+    department: 'Electronics & Communication',
+    email: 'kavya.ec24@college.edu',
+    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80'
+  }
+];
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
@@ -17,44 +34,49 @@ export function AuthProvider({ children }) {
         return null;
       }
     }
-    // Default to admin user for seamless demo evaluation, or null if logged out
-    return {
-      name: 'Dr. S. K. Raman',
-      role: 'Chief Campus Administrator',
-      email: DEMO_CREDENTIALS.email,
-      department: 'Estate & Campus Operations',
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
-    };
+    // Default to null so user arrives at the clean Sign-In page first,
+    // or can 1-click select Student vs Admin!
+    return null;
   });
 
   const isAuthenticated = !!user;
+  const isAdmin = user?.userType === 'admin';
+  const isStudent = user?.userType === 'student';
 
-  const login = (email, password) => {
+  const loginAsAdmin = (email, password) => {
     const trimmedEmail = email.trim().toLowerCase();
     if (
-      (trimmedEmail === DEMO_CREDENTIALS.email.toLowerCase() || trimmedEmail === 'admin@campus.edu') &&
-      password === DEMO_CREDENTIALS.password
+      (trimmedEmail === DEMO_ADMIN_CREDENTIALS.email.toLowerCase() || trimmedEmail === 'admin@campus.edu') &&
+      password === DEMO_ADMIN_CREDENTIALS.password
     ) {
-      const newUser = {
+      const adminUser = {
         name: 'Dr. S. K. Raman',
         role: 'Chief Campus Administrator',
-        email: DEMO_CREDENTIALS.email,
+        userType: 'admin',
+        email: DEMO_ADMIN_CREDENTIALS.email,
         department: 'Estate & Campus Operations',
         avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
       };
-      setUser(newUser);
-      localStorage.setItem('campuspulse_auth', JSON.stringify(newUser));
+      setUser(adminUser);
+      localStorage.setItem('campuspulse_auth', JSON.stringify(adminUser));
       return { success: true };
     }
-    return { success: false, error: 'Invalid email or password. Please use demo credentials.' };
+    return { success: false, error: 'Invalid admin credentials. Use admin@college.edu / admin123' };
   };
 
-  const loginAsStudent = (name = 'Kavya Verma', dept = 'Computer Science') => {
+  const loginAsStudent = ({
+    name = 'Aarav Patel',
+    studentId = 'CS-2024-042',
+    department = 'Computer Science & Engineering',
+    email = ''
+  } = {}) => {
     const studentUser = {
-      name,
-      role: 'Student Representative',
-      email: 'student@college.edu',
-      department: dept,
+      name: name.trim() || 'Aarav Patel',
+      role: 'Student (Complainant)',
+      userType: 'student',
+      studentId: studentId.trim() || 'CS-2024-042',
+      department: department.trim() || 'Computer Science & Engineering',
+      email: email.trim() || `${name.toLowerCase().replace(/\s+/g, '')}@college.edu`,
       avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80'
     };
     setUser(studentUser);
@@ -71,10 +93,13 @@ export function AuthProvider({ children }) {
     <AuthContext.Provider value={{
       user,
       isAuthenticated,
-      login,
+      isAdmin,
+      isStudent,
+      loginAsAdmin,
       loginAsStudent,
       logout,
-      demoCredentials: DEMO_CREDENTIALS
+      demoAdminCredentials: DEMO_ADMIN_CREDENTIALS,
+      demoStudents: DEMO_STUDENTS
     }}>
       {children}
     </AuthContext.Provider>

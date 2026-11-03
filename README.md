@@ -1,6 +1,6 @@
 # 🎓 CampusPulse — Campus Complaint Management System
 
-A full-stack, modern, responsive, and persistent **Campus Complaint Management System** designed for colleges and universities. Features automated urgency calculation, priority dispatch queues, status audit histories, interactive analytics, and persistent SQLite database storage.
+A full-stack, modern, responsive, and persistent **Campus Complaint Management System** designed for colleges and universities. Features role-based authentication (Student vs. Administrator), automated urgency calculation, priority dispatch queues, status audit histories, interactive analytics, and persistent SQLite database storage.
 
 ---
 
@@ -14,14 +14,42 @@ A full-stack, modern, responsive, and persistent **Campus Complaint Management S
 
 ---
 
-## 🔑 Demo Administrator Credentials
+## 🔐 Sign-In Portal & Role-Based Access Control
 
-The application includes an administrator login portal with a 1-click **Autofill** helper:
+The application features a dual-tab sign-in portal enforcing strict role-based permissions:
 
-- **Email:** `admin@college.edu` *(or `admin@campus.edu`)*
-- **Password:** `admin123`
-- **Role:** Chief Campus Administrator *(Dr. S. K. Raman)*
-- **Student Mode:** A 1-click student mode is also available to test filing complaints from a student's perspective without authentication friction.
+### 1. 🎓 Student / Complainant Portal
+Designed for college students to lodge complaints and monitor live progress:
+- **Capabilities (Allowed):**
+  - ✅ Submit new complaints (Wi-Fi, Hostel, Classroom, Laboratory, Campus Facilities).
+  - ✅ Monitor live status of grievances (`Raised` $\to$ `In Progress` $\to$ `Resolved`).
+  - ✅ View full dashboard metrics, charts, and top priority queue.
+  - ✅ Inspect complaint details, submission age in hours, and resolution notes.
+- **Restrictions (Disabled):**
+  - ❌ **Cannot** change complaint status (only administrators can start work or resolve tickets).
+  - ❌ **Cannot** edit or delete existing complaint records.
+  - ❌ **Cannot** reset the database or change administrative settings.
+- **Demo Quick-Select:** Choose between **Aarav Patel** (*CS-2024-042*) or **Kavya Verma** (*EC-2024-089*) with 1-click.
+
+### 2. 🛡️ Campus Administrator Portal
+Designed for facility managers, department heads, and maintenance admins:
+- **Capabilities (Full Authority):**
+  - 🛠️ Change complaint status: transition tickets from `Raised` $\to$ `In Progress` (start work) $\to$ `Resolved`.
+  - 📝 Record technician notes, dispatch logs, and resolution details.
+  - ✏️ Edit complaint details (category, description, location).
+  - 🗑️ Permanently delete complaints with confirmation modal.
+  - 🔄 Re-seed / reset sample demonstration data.
+  - 📊 Export full complaints dataset to CSV.
+- **Demo Credentials (with 1-Click Autofill):**
+  - **Email:** `admin@college.edu` *(or `admin@campus.edu`)*
+  - **Password:** `admin123`
+
+### 3. 🚪 Sign-Out / Logout Option
+A prominent **Sign Out** button is available in:
+- The top **Navbar** header.
+- The **Sidebar** profile card.
+- The **Settings** account section.
+Signing out securely clears the active session and returns to the Sign-In screen.
 
 ---
 

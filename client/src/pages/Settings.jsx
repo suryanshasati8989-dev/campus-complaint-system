@@ -14,14 +14,17 @@ import {
   Info,
   CheckCircle2,
   Trash2,
-  AlertTriangle
+  AlertTriangle,
+  Lock,
+  User,
+  LogOut
 } from 'lucide-react';
 import ConfirmModal from '../components/ConfirmModal';
 
 export default function Settings() {
   const { theme, toggleTheme } = useTheme();
-  const { user } = useAuth();
-  const { dataSource, resetSampleData, complaints } = useComplaints();
+  const { user, isAdmin, isStudent, logout } = useAuth();
+  const { dataSource, resetSampleData, complaints, addToast } = useComplaints();
 
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
 
@@ -30,22 +33,71 @@ export default function Settings() {
     await resetSampleData();
   };
 
+  const handleLogout = () => {
+    logout();
+    addToast('Signed out successfully.', 'info', 'Session Ended');
+  };
+
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-4xl mx-auto">
       
       {/* Header */}
-      <div>
-        <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2.5">
-          <SettingsIcon className="w-7 h-7 text-indigo-600" />
-          System Settings & Campus Configuration
-        </h2>
-        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-          Customize interface appearance, view database connectivity, and manage demonstration datasets
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2.5">
+            <SettingsIcon className="w-7 h-7 text-indigo-600" />
+            System Settings & User Account
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+            Account role details, appearance customization, and persistent database status
+          </p>
+        </div>
+
+        <button
+          onClick={handleLogout}
+          className="px-4 py-2.5 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-white dark:bg-slate-900 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-xs font-semibold shadow-sm transition flex items-center gap-2 self-start sm:self-auto"
+        >
+          <LogOut className="w-4 h-4" />
+          <span>Sign Out / Switch User</span>
+        </button>
       </div>
 
       <div className="space-y-6">
         
+        {/* User Account Details */}
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm">
+          <div className="flex items-center gap-4">
+            <img
+              src={user?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'}
+              alt={user?.name}
+              className="w-16 h-16 rounded-2xl object-cover ring-2 ring-slate-200 dark:ring-slate-700 shrink-0"
+            />
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <h3 className="font-bold text-lg text-slate-900 dark:text-white truncate">
+                  {user?.name}
+                </h3>
+                <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
+                  isAdmin 
+                    ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300'
+                    : 'bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300'
+                }`}>
+                  {isAdmin ? 'Administrator' : 'Student (Complainant)'}
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                {user?.email} • {user?.department || 'Main Campus'}
+              </p>
+              <p className="text-[11px] text-slate-400 mt-1">
+                {isAdmin
+                  ? 'Full administrative authority: Workflow status changes, dispatching technicians, editing tickets, and deletion.'
+                  : 'Student role: Submitting complaints & real-time monitoring of grievance resolution pipeline.'
+                }
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Appearance Settings */}
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm">
           <h3 className="font-bold text-base text-slate-900 dark:text-white mb-2 flex items-center gap-2">
@@ -110,70 +162,42 @@ export default function Settings() {
           </div>
         </div>
 
-        {/* Demo Data Management */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm">
-          <h3 className="font-bold text-base text-slate-900 dark:text-white mb-2 flex items-center gap-2">
-            <RotateCcw className="w-5 h-5 text-amber-500" />
-            Demonstration Dataset Reset
-          </h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
-            Restore the benchmark sample complaints (C01 Wi-Fi, C02 Hostel, C03 Classroom, C04 Laboratory)
-          </p>
+        {/* Demo Data Management - Only for Admins */}
+        {isAdmin ? (
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm">
+            <h3 className="font-bold text-base text-slate-900 dark:text-white mb-2 flex items-center gap-2">
+              <RotateCcw className="w-5 h-5 text-amber-500" />
+              Demonstration Dataset Reset
+            </h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+              Restore the benchmark sample complaints (C01 Wi-Fi, C02 Hostel, C03 Classroom, C04 Laboratory)
+            </p>
 
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/60">
-            <div>
-              <div className="text-sm font-semibold text-slate-900 dark:text-white">
-                Reset Sample Complaints
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/60">
+              <div>
+                <div className="text-sm font-semibold text-slate-900 dark:text-white">
+                  Reset Sample Complaints
+                </div>
+                <div className="text-xs text-slate-500 dark:text-slate-400">
+                  Clears custom complaints and re-seeds C01, C02, C03, and C04 with original submission timestamps.
+                </div>
               </div>
-              <div className="text-xs text-slate-500 dark:text-slate-400">
-                Clears custom complaints and re-seeds C01, C02, C03, and C04 with original submission timestamps.
-              </div>
-            </div>
 
-            <button
-              onClick={() => setIsResetModalOpen(true)}
-              className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs shadow-sm transition flex items-center gap-1.5 shrink-0 self-start sm:self-auto"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span>Reset to Sample Data</span>
-            </button>
-          </div>
-        </div>
-
-        {/* System Architecture Specifications */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm">
-          <h3 className="font-bold text-base text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-            <Server className="w-5 h-5 text-indigo-500" />
-            Software Architecture & Competition Specs
-          </h3>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
-            <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
-              <span className="text-slate-400 block text-[10px]">Frontend Framework</span>
-              <strong className="text-slate-800 dark:text-slate-200">React.js + Vite</strong>
-            </div>
-            <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
-              <span className="text-slate-400 block text-[10px]">Styling Engine</span>
-              <strong className="text-slate-800 dark:text-slate-200">Tailwind CSS v3.4</strong>
-            </div>
-            <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
-              <span className="text-slate-400 block text-[10px]">Charts & Graphs</span>
-              <strong className="text-slate-800 dark:text-slate-200">Recharts</strong>
-            </div>
-            <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
-              <span className="text-slate-400 block text-[10px]">Backend Server</span>
-              <strong className="text-slate-800 dark:text-slate-200">Express.js (Port 5000)</strong>
-            </div>
-            <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
-              <span className="text-slate-400 block text-[10px]">Primary Database</span>
-              <strong className="text-slate-800 dark:text-slate-200">Node:SQLite Persistent</strong>
-            </div>
-            <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
-              <span className="text-slate-400 block text-[10px]">Offline Fallback</span>
-              <strong className="text-slate-800 dark:text-slate-200">LocalStorage Mirror</strong>
+              <button
+                onClick={() => setIsResetModalOpen(true)}
+                className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs shadow-sm transition flex items-center gap-1.5 shrink-0 self-start sm:self-auto"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Reset to Sample Data</span>
+              </button>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
+            <Lock className="w-5 h-5 text-slate-400 shrink-0" />
+            <span>Database re-seeding and administration controls require signing in with Administrator privileges.</span>
+          </div>
+        )}
 
       </div>
 

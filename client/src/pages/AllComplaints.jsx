@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useComplaints } from '../context/ComplaintContext';
+import { useAuth } from '../context/AuthContext';
 import { api } from '../api';
 import { 
   Search, 
@@ -15,9 +16,11 @@ import {
   Tag, 
   CheckCircle2, 
   AlertCircle,
-  MoreVertical,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  ShieldCheck,
+  User,
+  Lock
 } from 'lucide-react';
 
 export default function AllComplaints({ setActiveTab }) {
@@ -31,6 +34,8 @@ export default function AllComplaints({ setActiveTab }) {
     updateStatus,
     loading 
   } = useComplaints();
+
+  const { isAdmin, isStudent } = useAuth();
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -111,7 +116,15 @@ export default function AllComplaints({ setActiveTab }) {
             All Campus Complaints
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Browse, filter, prioritize, and update grievance tickets across campus
+            {isAdmin ? (
+              <span className="text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
+                <ShieldCheck className="w-3.5 h-3.5" /> Administrator Mode: Full ticket management, editing, status change, and deletion enabled
+              </span>
+            ) : (
+              <span className="text-blue-600 dark:text-blue-400 font-medium flex items-center gap-1">
+                <User className="w-3.5 h-3.5" /> Student Mode: Real-time status tracking only (status updates managed by administrators)
+              </span>
+            )}
           </p>
         </div>
 
@@ -226,7 +239,7 @@ export default function AllComplaints({ setActiveTab }) {
               No Complaints Found
             </h3>
             <p className="text-xs text-slate-500 max-w-sm mx-auto">
-              There are no complaint records matching your current filter criteria. Try clearing filters or submit a new complaint.
+              There are no complaint records matching your current filter criteria.
             </p>
             <button
               onClick={handleResetFilters}
@@ -304,17 +317,19 @@ export default function AllComplaints({ setActiveTab }) {
                           {c.status}
                         </span>
 
-                        {/* Quick Status Dropdown for Admin */}
-                        <select
-                          value={c.status}
-                          onChange={(e) => updateStatus(c.id, e.target.value)}
-                          className="text-[10px] py-1 px-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 focus:outline-none"
-                          title="Quick update status"
-                        >
-                          <option value="Raised">Raised</option>
-                          <option value="In Progress">In Progress</option>
-                          <option value="Resolved">Resolved</option>
-                        </select>
+                        {/* Quick Status Dropdown for Admin Only */}
+                        {isAdmin && (
+                          <select
+                            value={c.status}
+                            onChange={(e) => updateStatus(c.id, e.target.value)}
+                            className="text-[10px] py-1 px-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 focus:outline-none"
+                            title="Quick update status (Admin only)"
+                          >
+                            <option value="Raised">Raised</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Resolved">Resolved</option>
+                          </select>
+                        )}
                       </div>
                     </td>
 
@@ -330,30 +345,35 @@ export default function AllComplaints({ setActiveTab }) {
                       </div>
                     </td>
 
-                    {/* Actions */}
+                    {/* Actions: View Details for all, Edit/Delete for Admin only */}
                     <td className="py-4 px-4 sm:px-6 text-right">
                       <div className="flex items-center justify-end gap-1.5">
                         <button
                           onClick={() => openDetailModal(c)}
                           className="p-1.5 rounded-lg text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition"
-                          title="View Details"
+                          title="View Live Details"
                         >
                           <Eye className="w-4 h-4" />
                         </button>
-                        <button
-                          onClick={() => openEditModal(c)}
-                          className="p-1.5 rounded-lg text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 transition"
-                          title="Edit Complaint"
-                        >
-                          <Edit3 className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => openDeleteModal(c)}
-                          className="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition"
-                          title="Delete Complaint"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+
+                        {isAdmin && (
+                          <>
+                            <button
+                              onClick={() => openEditModal(c)}
+                              className="p-1.5 rounded-lg text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 transition"
+                              title="Edit Complaint"
+                            >
+                              <Edit3 className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => openDeleteModal(c)}
+                              className="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition"
+                              title="Delete Complaint"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </>
+                        )}
                       </div>
                     </td>
 

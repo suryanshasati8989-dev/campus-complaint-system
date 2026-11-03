@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useComplaints } from '../context/ComplaintContext';
+import { useAuth } from '../context/AuthContext';
 import { CATEGORY_WEIGHTS, getCategoryWeight } from '../api';
 import { 
   Flame, 
@@ -15,11 +16,15 @@ import {
   RotateCw,
   Sparkles,
   ShieldAlert,
-  Info
+  ShieldCheck,
+  User,
+  Info,
+  Wrench
 } from 'lucide-react';
 
 export default function PriorityQueue({ setActiveTab }) {
   const { priorityData, openDetailModal, updateStatus } = useComplaints();
+  const { isAdmin, isStudent } = useAuth();
 
   // Interactive Simulator Sandbox State
   const [simCategory, setSimCategory] = useState('Laboratory');
@@ -81,6 +86,23 @@ export default function PriorityQueue({ setActiveTab }) {
 
         {/* Ambient glow */}
         <div className="absolute right-0 bottom-0 w-80 h-80 rounded-full bg-amber-400/20 blur-3xl pointer-events-none" />
+      </div>
+
+      {/* Role Notice */}
+      <div className={`p-4 rounded-2xl flex items-center justify-between text-xs border ${
+        isAdmin
+          ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300'
+          : 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-300'
+      }`}>
+        <div className="flex items-center gap-2">
+          {isAdmin ? <ShieldCheck className="w-4 h-4" /> : <User className="w-4 h-4" />}
+          <span>
+            {isAdmin 
+              ? 'Administrator Mode: You can dispatch maintenance, initiate work (In Progress), and resolve tickets directly from this queue.'
+              : 'Student Mode: You can inspect live priority scores and formula calculations. Dispatch actions are handled by administrators.'
+            }
+          </span>
+        </div>
       </div>
 
       {/* Mathematical Algorithm Explanation Section */}
@@ -190,7 +212,7 @@ export default function PriorityQueue({ setActiveTab }) {
         </div>
       </div>
 
-      {/* TOP 3 HIGHEST PRIORITY SPOTLIGHT (Mandatory Requirement) */}
+      {/* TOP 3 HIGHEST PRIORITY SPOTLIGHT */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
@@ -277,23 +299,31 @@ export default function PriorityQueue({ setActiveTab }) {
                       className="px-3.5 py-2 text-xs font-bold rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 transition flex items-center gap-1.5"
                     >
                       <Eye className="w-3.5 h-3.5" />
-                      View Details
+                      Inspect Details
                     </button>
 
-                    {c.status === 'Raised' ? (
-                      <button
-                        onClick={() => updateStatus(c.id, 'In Progress', 'Admin dispatched priority task')}
-                        className="px-3.5 py-2 text-xs font-bold rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition"
-                      >
-                        Start Work
-                      </button>
+                    {/* Admin Workflow Buttons */}
+                    {isAdmin ? (
+                      c.status === 'Raised' ? (
+                        <button
+                          onClick={() => updateStatus(c.id, 'In Progress', 'Admin dispatched priority maintenance task')}
+                          className="px-3.5 py-2 text-xs font-bold rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition flex items-center gap-1"
+                        >
+                          <Wrench className="w-3 h-3" />
+                          <span>Start Work</span>
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => updateStatus(c.id, 'Resolved', 'Resolved from priority queue dispatch')}
+                          className="px-3.5 py-2 text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition"
+                        >
+                          Resolve ✓
+                        </button>
+                      )
                     ) : (
-                      <button
-                        onClick={() => updateStatus(c.id, 'Resolved', 'Resolved from priority queue')}
-                        className="px-3.5 py-2 text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition"
-                      >
-                        Resolve ✓
-                      </button>
+                      <span className="text-[11px] font-semibold text-slate-400 italic">
+                        {c.status === 'Raised' ? 'Queued for admin' : 'Work in progress'}
+                      </span>
                     )}
                   </div>
                 </div>
@@ -366,7 +396,7 @@ export default function PriorityQueue({ setActiveTab }) {
                       onClick={() => openDetailModal(c)}
                       className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
                     >
-                      Inspect
+                      Track
                     </button>
                   </td>
                 </tr>

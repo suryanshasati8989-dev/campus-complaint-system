@@ -20,7 +20,8 @@ import Analytics from './pages/Analytics';
 import Settings from './pages/Settings';
 import Login from './pages/Login';
 
-function MainLayout() {
+function MainAppShell() {
+  const { isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -31,6 +32,11 @@ function MainLayout() {
     closeDeleteModal,
     deleteComplaint
   } = useComplaints();
+
+  // If not signed in, show the modern Sign In page directly!
+  if (!isAuthenticated) {
+    return <Login setActiveTab={setActiveTab} />;
+  }
 
   const renderActivePage = () => {
     switch (activeTab) {
@@ -46,8 +52,6 @@ function MainLayout() {
         return <Analytics setActiveTab={setActiveTab} />;
       case 'settings':
         return <Settings setActiveTab={setActiveTab} />;
-      case 'login':
-        return <Login setActiveTab={setActiveTab} />;
       default:
         return <Dashboard setActiveTab={setActiveTab} />;
     }
@@ -113,7 +117,7 @@ export default function App() {
     <ThemeProvider>
       <AuthProvider>
         <ComplaintProvider>
-          <MainLayout />
+          <MainAppShell />
         </ComplaintProvider>
       </AuthProvider>
     </ThemeProvider>

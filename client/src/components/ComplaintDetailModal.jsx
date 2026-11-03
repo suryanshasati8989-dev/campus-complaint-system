@@ -3,12 +3,13 @@ import { useComplaints } from '../context/ComplaintContext';
 import { useAuth } from '../context/AuthContext';
 import { 
   X, Clock, Tag, Calendar, User, MapPin, Building, 
-  CheckCircle, ArrowRight, ShieldAlert, FileText, CheckCircle2, AlertCircle, Sparkles
+  CheckCircle, ArrowRight, ShieldAlert, FileText, CheckCircle2, AlertCircle, Sparkles,
+  Lock, ShieldCheck, Wrench
 } from 'lucide-react';
 
 export default function ComplaintDetailModal() {
   const { selectedComplaint, isDetailModalOpen, closeDetailModal, updateStatus, openEditModal, openDeleteModal } = useComplaints();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
 
   const [newStatus, setNewStatus] = useState('');
   const [statusNotes, setStatusNotes] = useState('');
@@ -20,7 +21,7 @@ export default function ComplaintDetailModal() {
 
   const handleStatusChange = async (targetStatus) => {
     setIsUpdating(true);
-    await updateStatus(c.id, targetStatus, statusNotes, user ? user.name : 'Admin');
+    await updateStatus(c.id, targetStatus, statusNotes, user ? user.name : 'Campus Administrator');
     setIsUpdating(false);
     setStatusNotes('');
   };
@@ -57,7 +58,7 @@ export default function ComplaintDetailModal() {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-900/60 backdrop-blur-sm overflow-y-auto animate-fade-in">
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl max-w-3xl w-full my-auto text-slate-800 dark:text-slate-100 max-h-[92vh] flex flex-col">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl max-w-3xl w-full my-auto text-slate-800 dark:text-slate-100 max-h-[92vh] flex flex-col">
         
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-800 shrink-0">
@@ -83,16 +84,25 @@ export default function ComplaintDetailModal() {
         {/* Scrollable Content */}
         <div className="p-5 sm:p-6 space-y-6 overflow-y-auto flex-1">
           
-          {/* Progress Tracker Stepper */}
-          <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">
-              Workflow Status Progression
-            </h4>
-            <div className="flex items-center justify-between relative">
-              <div className="absolute top-1/2 left-0 right-0 h-1 bg-slate-200 dark:bg-slate-700 -translate-y-1/2 z-0" />
+          {/* Progress Tracker Stepper (Raised -> In Progress -> Resolved) */}
+          <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-200/60 dark:border-slate-700/60">
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                Live Resolution Progress
+              </h4>
+              <span className={`text-[11px] font-bold ${
+                c.status === 'Resolved' ? 'text-emerald-600 dark:text-emerald-400' :
+                c.status === 'In Progress' ? 'text-blue-600 dark:text-blue-400' : 'text-amber-600 dark:text-amber-400'
+              }`}>
+                Current Stage: {c.status}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between relative px-2">
+              <div className="absolute top-1/2 left-4 right-4 h-1 bg-slate-200 dark:bg-slate-700 -translate-y-1/2 z-0" />
               <div 
-                className="absolute top-1/2 left-0 h-1 bg-indigo-600 -translate-y-1/2 z-0 transition-all duration-300"
-                style={{ width: `${(currentStepIndex / 2) * 100}%` }}
+                className="absolute top-1/2 left-4 h-1 bg-indigo-600 -translate-y-1/2 z-0 transition-all duration-300"
+                style={{ width: `${(currentStepIndex / 2) * 88}%` }}
               />
 
               {steps.map((step, idx) => {
@@ -123,49 +133,49 @@ export default function ComplaintDetailModal() {
             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-1.5">
               <FileText className="w-3.5 h-3.5" /> Complaint Description
             </h4>
-            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 text-sm leading-relaxed text-slate-700 dark:text-slate-200 font-medium">
+            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 text-sm leading-relaxed text-slate-700 dark:text-slate-200 font-medium">
               {c.description}
             </div>
           </div>
 
           {/* Quick Meta Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5">
-            <div className="p-3.5 rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-800/60">
+            <div className="p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-800/60">
               <div className="text-xs text-slate-500 flex items-center gap-1.5 mb-1">
                 <Tag className="w-3.5 h-3.5 text-indigo-500" /> Category & Weight
               </div>
               <div className="text-sm font-semibold">{c.category} (Weight: {c.categoryWeight})</div>
             </div>
 
-            <div className="p-3.5 rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-800/60">
+            <div className="p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-800/60">
               <div className="text-xs text-slate-500 flex items-center gap-1.5 mb-1">
-                <Clock className="w-3.5 h-3.5 text-amber-500" /> Age / Hours Pending
+                <Clock className="w-3.5 h-3.5 text-amber-500" /> Age / Pending Time
               </div>
               <div className="text-sm font-semibold">{c.hoursPending} Hours ({c.daysPending} full days)</div>
             </div>
 
-            <div className="p-3.5 rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-800/60">
+            <div className="p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-800/60">
               <div className="text-xs text-slate-500 flex items-center gap-1.5 mb-1">
                 <Calendar className="w-3.5 h-3.5 text-blue-500" /> Submitted At
               </div>
               <div className="text-xs font-semibold">{new Date(c.submitted_at).toLocaleString()}</div>
             </div>
 
-            <div className="p-3.5 rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-800/60">
+            <div className="p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-800/60">
               <div className="text-xs text-slate-500 flex items-center gap-1.5 mb-1">
                 <User className="w-3.5 h-3.5 text-purple-500" /> Student Name
               </div>
               <div className="text-sm font-semibold">{c.student_name || 'Anonymous Student'}</div>
             </div>
 
-            <div className="p-3.5 rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-800/60">
+            <div className="p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-800/60">
               <div className="text-xs text-slate-500 flex items-center gap-1.5 mb-1">
                 <Building className="w-3.5 h-3.5 text-emerald-500" /> Department
               </div>
               <div className="text-sm font-semibold">{c.department || 'Not Specified'}</div>
             </div>
 
-            <div className="p-3.5 rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-800/60">
+            <div className="p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-800/60">
               <div className="text-xs text-slate-500 flex items-center gap-1.5 mb-1">
                 <MapPin className="w-3.5 h-3.5 text-rose-500" /> Location
               </div>
@@ -174,73 +184,102 @@ export default function ComplaintDetailModal() {
           </div>
 
           {/* Urgency Formula Breakdown Card */}
-          <div className="p-4 rounded-xl bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-950/40 dark:to-blue-950/40 border border-indigo-200 dark:border-indigo-800/60">
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-950/40 dark:to-blue-950/40 border border-indigo-200 dark:border-indigo-800/60">
             <div className="flex items-center gap-2 mb-2 text-indigo-700 dark:text-indigo-300 font-semibold text-xs tracking-wider uppercase">
-              <Sparkles className="w-4 h-4" /> Priority Score Calculation Breakdown
+              <Sparkles className="w-4 h-4" /> Urgency Calculation
             </div>
             <div className="font-mono text-sm text-slate-800 dark:text-slate-200">
               Urgency Score = Category Weight ({c.categoryWeight}) + FLOOR({c.hoursPending} / 24) = {c.categoryWeight} + {c.daysPending} = <strong className="text-indigo-600 dark:text-indigo-400 font-bold text-base">{c.urgencyScore}</strong>
             </div>
-            <div className="text-xs text-slate-500 dark:text-slate-400 mt-1.5">
-              Resulting Priority Level: <strong>{c.priorityLevel}</strong>. Recalculated dynamically as complaint age increases.
+            <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              Priority Rank: <strong>{c.priorityLevel}</strong>. Automatically recalculated as complaint ages.
             </div>
           </div>
 
-          {/* Administrator Action Bar */}
-          <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
-              Update Status & Resolution
-            </h4>
+          {/* ROLE-BASED ACTION SECTION */}
+          {isAdmin ? (
+            /* Administrator Control Panel */
+            <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/40 space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                  Admin Status & Resolution Workflow
+                </h4>
+                <span className="text-[10px] bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-full font-bold">
+                  Admin Exclusive
+                </span>
+              </div>
 
-            <div>
-              <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">
-                Resolution or Status Transition Note (Optional)
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. Technician inspected site; spare parts ordered..."
-                value={statusNotes}
-                onChange={(e) => setStatusNotes(e.target.value)}
-                className="w-full text-xs px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
+              <div>
+                <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">
+                  Resolution or Status Transition Note
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Electrician dispatched to inspect wiring; replacement switch installed..."
+                  value={statusNotes}
+                  onChange={(e) => setStatusNotes(e.target.value)}
+                  className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
 
-            <div className="flex flex-wrap items-center gap-2 pt-1">
-              <span className="text-xs text-slate-500 mr-2">Transition to:</span>
-              {c.status !== 'Raised' && (
-                <button
-                  disabled={isUpdating}
-                  onClick={() => handleStatusChange('Raised')}
-                  className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-amber-50 text-amber-700 border border-amber-300 hover:bg-amber-100 transition"
-                >
-                  Mark as Raised
-                </button>
-              )}
-              {c.status !== 'In Progress' && (
-                <button
-                  disabled={isUpdating}
-                  onClick={() => handleStatusChange('In Progress')}
-                  className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-blue-50 text-blue-700 border border-blue-300 hover:bg-blue-100 transition"
-                >
-                  Mark In Progress
-                </button>
-              )}
-              {c.status !== 'Resolved' && (
-                <button
-                  disabled={isUpdating}
-                  onClick={() => handleStatusChange('Resolved')}
-                  className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm transition"
-                >
-                  Mark as Resolved ✓
-                </button>
-              )}
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                <span className="text-xs text-slate-500 mr-2">Change Status to:</span>
+                {c.status !== 'Raised' && (
+                  <button
+                    disabled={isUpdating}
+                    onClick={() => handleStatusChange('Raised')}
+                    className="px-3.5 py-2 text-xs font-semibold rounded-xl bg-amber-50 text-amber-700 border border-amber-300 hover:bg-amber-100 transition"
+                  >
+                    Set to Raised
+                  </button>
+                )}
+                {c.status !== 'In Progress' && (
+                  <button
+                    disabled={isUpdating}
+                    onClick={() => handleStatusChange('In Progress')}
+                    className="px-3.5 py-2 text-xs font-semibold rounded-xl bg-blue-600 text-white hover:bg-blue-700 shadow-sm transition flex items-center gap-1.5"
+                  >
+                    <Wrench className="w-3.5 h-3.5" />
+                    <span>Start Work (In Progress)</span>
+                  </button>
+                )}
+                {c.status !== 'Resolved' && (
+                  <button
+                    disabled={isUpdating}
+                    onClick={() => handleStatusChange('Resolved')}
+                    className="px-3.5 py-2 text-xs font-semibold rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm transition flex items-center gap-1.5"
+                  >
+                    <CheckCircle className="w-3.5 h-3.5" />
+                    <span>Mark as Resolved ✓</span>
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
+          ) : (
+            /* Student View-Only Info Banner */
+            <div className="p-4 rounded-2xl bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200/80 dark:border-blue-800/60 flex items-start gap-3">
+              <Lock className="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+              <div className="text-xs space-y-1">
+                <div className="font-bold text-blue-900 dark:text-blue-200">
+                  Student Live Status Tracker
+                </div>
+                <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-[11px]">
+                  {c.status === 'Raised' && 'Your grievance is currently in the queue awaiting administrative inspection.'}
+                  {c.status === 'In Progress' && 'Campus maintenance staff have acknowledged this ticket and work is currently active.'}
+                  {c.status === 'Resolved' && 'This issue has been formally marked as resolved by college administration.'}
+                </p>
+                <p className="text-[10px] text-slate-400 italic">
+                  Note: Workflow status transitions are authorized for Campus Administrators only.
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Status Timeline History */}
           <div>
             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3 flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5" /> Status Audit Trail & History
+              <Clock className="w-3.5 h-3.5" /> Status Audit Trail & Activity Log
             </h4>
             <div className="space-y-3 relative pl-4 border-l-2 border-slate-200 dark:border-slate-800">
               {c.history && c.history.length > 0 ? (
@@ -261,12 +300,12 @@ export default function ComplaintDetailModal() {
                       </span>
                     </div>
                     {hist.notes && (
-                      <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 bg-slate-50 dark:bg-slate-800/60 p-2 rounded-lg border border-slate-100 dark:border-slate-800">
+                      <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800">
                         {hist.notes}
                       </p>
                     )}
                     <div className="text-[10px] text-slate-400 mt-0.5">
-                      By: {hist.changed_by || 'System'}
+                      Updated by: {hist.changed_by || 'System'}
                     </div>
                   </div>
                 ))
@@ -281,28 +320,32 @@ export default function ComplaintDetailModal() {
         {/* Footer Actions */}
         <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => {
-                closeDetailModal();
-                openEditModal(c);
-              }}
-              className="px-3.5 py-1.5 text-xs font-medium rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-            >
-              Edit Details
-            </button>
-            <button
-              onClick={() => {
-                closeDetailModal();
-                openDeleteModal(c);
-              }}
-              className="px-3.5 py-1.5 text-xs font-medium text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition"
-            >
-              Delete
-            </button>
+            {isAdmin && (
+              <>
+                <button
+                  onClick={() => {
+                    closeDetailModal();
+                    openEditModal(c);
+                  }}
+                  className="px-3.5 py-2 text-xs font-medium rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                >
+                  Edit Details
+                </button>
+                <button
+                  onClick={() => {
+                    closeDetailModal();
+                    openDeleteModal(c);
+                  }}
+                  className="px-3.5 py-2 text-xs font-medium text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition"
+                >
+                  Delete Ticket
+                </button>
+              </>
+            )}
           </div>
           <button
             onClick={closeDetailModal}
-            className="px-4 py-2 text-xs font-semibold rounded-lg bg-slate-800 dark:bg-slate-200 text-white dark:text-slate-900 hover:bg-slate-700 transition"
+            className="px-5 py-2 text-xs font-bold rounded-xl bg-slate-800 dark:bg-slate-200 text-white dark:text-slate-900 hover:bg-slate-700 transition"
           >
             Close
           </button>

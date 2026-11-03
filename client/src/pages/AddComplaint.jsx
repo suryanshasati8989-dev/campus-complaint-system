@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useComplaints } from '../context/ComplaintContext';
 import { useAuth } from '../context/AuthContext';
 import { CATEGORY_WEIGHTS, getCategoryWeight } from '../api';
@@ -14,21 +14,29 @@ import {
   AlertCircle, 
   CheckCircle2, 
   Clock, 
-  HelpCircle 
+  HelpCircle,
+  ShieldCheck
 } from 'lucide-react';
 
 export default function AddComplaint({ setActiveTab }) {
   const { createComplaint } = useComplaints();
-  const { user } = useAuth();
+  const { user, isStudent } = useAuth();
 
   const [category, setCategory] = useState('Wi-Fi');
   const [description, setDescription] = useState('');
-  const [studentName, setStudentName] = useState(user && user.role.includes('Student') ? user.name : '');
+  const [studentName, setStudentName] = useState(user ? user.name : '');
   const [department, setDepartment] = useState(user && user.department ? user.department : '');
   const [location, setLocation] = useState('');
   
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      setStudentName(user.name);
+      if (user.department) setDepartment(user.department);
+    }
+  }, [user]);
 
   // Live Urgency preview (Initial: 0 hours pending)
   const currentWeight = getCategoryWeight(category);
@@ -91,6 +99,19 @@ export default function AddComplaint({ setActiveTab }) {
           Lodge facility issues for prompt campus administration review and automated priority dispatch.
         </p>
       </div>
+
+      {/* User Session Banner */}
+      {user && (
+        <div className="p-3.5 rounded-2xl bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-200/80 dark:border-indigo-800/60 flex items-center justify-between text-xs">
+          <div className="flex items-center gap-2 text-indigo-900 dark:text-indigo-200">
+            <User className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+            <span>Filing as: <strong>{user.name}</strong> ({user.department || 'Campus'})</span>
+          </div>
+          <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300">
+            Status: Raised on Submit
+          </span>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
